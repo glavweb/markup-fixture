@@ -108,18 +108,18 @@ class MarkupFixtureHelper
     private function videoMarkupData($video)
     {
         $providerReference = $this->getYouTubeProviderReferenceByUrl($video);
-        $thumbnail = $this->addHostUrl('dummy/dummy_video.jpg');
+        $metaData = $this->getMetadataByReference($providerReference);
 
         return [
             'id'                 => uniqid(),
-            'name'               => 'Name for video',
+            'name'               => $metaData['title'],
             'description'        => 'description for video',
-            'thumbnail'          => $thumbnail,
-            'thumbnail_path'     => $thumbnail,
+            'thumbnail'          => $metaData['thumbnail_url'],
+            'thumbnail_path'     => $metaData['thumbnail_url'],
             'content_type'       => 'video/x-flv',
             'content_size'       => null,
-            'width'              => 480,
-            'height'             => 270,
+            'width'              => $metaData['width'],
+            'height'             => $metaData['height'],
             'provider_reference' => $providerReference
         ];
     }
@@ -150,19 +150,6 @@ class MarkupFixtureHelper
         }
 
         return $prepared;
-    }
-
-    /**
-     * @param string $url
-     * @return string
-     */
-    private function getYouTubeProviderReferenceByUrl($url)
-    {
-        if (preg_match("/(?<=v(\=|\/))([-a-zA-Z0-9_]+)|(?<=youtu\.be\/)([-a-zA-Z0-9_]+)/", $url, $matches)) {
-            return $matches[0];
-        }
-
-        return null;
     }
 
     /**
@@ -201,5 +188,47 @@ class MarkupFixtureHelper
         }
 
         throw new \RuntimeException(sprintf('The field definition "%s" is not defined.', $fieldName));
+    }
+
+    /**
+     * @param string $url
+     * @return string
+     */
+    private function getYouTubeProviderReferenceByUrl($url)
+    {
+        if (preg_match("/(?<=v(\=|\/))([-a-zA-Z0-9_]+)|(?<=youtu\.be\/)([-a-zA-Z0-9_]+)/", $url, $matches)) {
+            return $matches[0];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $providerReference
+     * @return mixed
+     * @throws \RuntimeException
+     */
+    private function getMetadataByReference($providerReference)
+    {
+        $apiUrl = sprintf('http://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=%s&format=json', $providerReference);
+
+        try {
+            $response = file_get_contents($apiUrl);
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Unable to retrieve the video information for :' . $apiUrl, null, $e);
+        }
+
+        $metaData = json_decode($response, true);
+        if (!$metaData) {
+            throw new \RuntimeException('Unable to decode the video information for :' . $apiUrl);
+        }
+
+        return array(
+            'reference'     => $providerReference,
+            'title'         => $metaData['title'],
+            'thumbnail_url' => $metaData['thumbnail_url'],
+            'height'        => $metaData['height'],
+            'width'         => $metaData['width']
+        );
     }
 }
