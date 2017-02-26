@@ -1,0 +1,21 @@
+{
+    "name": "glavweb/markup-fixture",
+    "description": "The MarkupFixture package",
+    "authors": [
+        {
+            "name": "nilov",
+            "email": "nilov@glavweb.ru",
+            "homepage": "http://glavweb.ru"
+        },
+        {
+            "name": "GLAVWEB Community",
+            "homepage": "https://github.com/glavweb/markup-fixture/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9"
+    },
+    "autoload": {
+        "psr-4": { "Glavweb\\MarkupFixture\\": "src/" }
+    }
+}
