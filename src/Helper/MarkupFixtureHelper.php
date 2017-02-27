@@ -48,7 +48,7 @@ class MarkupFixtureHelper
             foreach ($instance as $fieldName => $fieldValue) {
                 $fieldDefinition = $this->getFieldDefinitionByName($class, $fieldName);
 
-                $fieldType = $fieldDefinition['type'];
+                $fieldType = isset($fieldDefinition['type']) ? $fieldDefinition['type'] : 'string';
                 switch ($fieldType) {
                     case 'image' :
                         $instance[$fieldName] = $this->imageMarkupData($fieldValue);
